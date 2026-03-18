@@ -8,6 +8,8 @@ import EntryHistory from './EntryHistory';
 export default function ControlPanel({
   slots,
   days,
+  tiktokInput,
+  setTiktokInput,
   positions,
   sanctionTypes,
   selectedSlot,
@@ -71,32 +73,43 @@ export default function ControlPanel({
 
         <SectionCard icon={Crosshair} title="Carga de puntos" subtitle="Sumar">
           <div className="form-grid">
-            <div>
-              <FieldLabel>Kills</FieldLabel>
-              <NumberField
-                type="number"
-                min="0"
-                value={killsInput}
-                onChange={(event) => setKillsInput(event.target.value)}
-                disabled={loading}
-              />
-            </div>
+  <div>
+    <FieldLabel>Kills</FieldLabel>
+    <NumberField
+      type="number"
+      min="0"
+      value={killsInput}
+      onChange={(event) => setKillsInput(event.target.value)}
+      disabled={loading}
+    />
+  </div>
 
-            <div>
-              <FieldLabel>Posición</FieldLabel>
-              <SelectField
-                value={positionInput}
-                onChange={(event) => setPositionInput(event.target.value)}
-                disabled={loading}
-              >
-                {positions.map((position) => (
-                  <option key={position.value} value={position.value}>
-                    {position.label}
-                  </option>
-                ))}
-              </SelectField>
-            </div>
-          </div>
+  <div>
+    <FieldLabel>Posición</FieldLabel>
+    <SelectField
+      value={positionInput}
+      onChange={(event) => setPositionInput(event.target.value)}
+      disabled={loading}
+    >
+      {positions.map((position) => (
+        <option key={position.value} value={position.value}>
+          {position.label}
+        </option>
+      ))}
+    </SelectField>
+  </div>
+
+  <div>
+    <FieldLabel>TIKTOK</FieldLabel>
+    <NumberField
+      type="number"
+      min="0"
+      value={tiktokInput}
+      onChange={(event) => setTiktokInput(event.target.value)}
+      disabled={loading}
+    />
+  </div>
+</div>
 
           <button
             type="button"

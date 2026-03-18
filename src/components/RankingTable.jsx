@@ -31,10 +31,10 @@ export default function RankingTable({ ranking, rankingFilter, setRankingFilter,
               <tr>
                 <th>#</th>
                 <th>Slot</th>
-                <th>Pts</th>
-                <th>Kills</th>
-                <th>A</th>
-                <th>R</th>
+                <th>PK</th>
+                <th>PP</th>
+                <th>PTK</th>
+                <th>Total</th>
               </tr>
             </thead>
             <tbody>
@@ -49,12 +49,12 @@ export default function RankingTable({ ranking, rankingFilter, setRankingFilter,
                     <td data-label="Slot" className="ranking-table__slot">
                       {team.name}
                     </td>
-                    <td data-label="Puntos" className="ranking-table__strong">
+                    <td data-label="PK">{team.killsPointsTotal}</td>
+                    <td data-label="PP">{team.positionPointsTotal}</td>
+                    <td data-label="PTK">{team.tikTokPointsTotal}</td>
+                    <td data-label="Total" className="ranking-table__strong">
                       {team.totalPoints}
                     </td>
-                    <td data-label="Kills">{team.killsTotal}</td>
-                    <td data-label="Amarillas">{team.yellowCount}</td>
-                    <td data-label="Rojas">{team.redCount}</td>
                   </tr>
                 );
               })}

@@ -3,11 +3,21 @@ export function getPositionPoints(position, positions) {
   return found?.points ?? 0;
 }
 
+export function getKillsPoints(kills) {
+  return Number(kills || 0) * 2;
+}
+
+export function getTikTokPoints(tiktokPoints) {
+  return Number(tiktokPoints || 0);
+}
+
 export function calculateEntryPoints(entry, positions) {
-  const killsPoints = Number(entry.kills || 0) * 2;
+  const killsPoints = getKillsPoints(entry.kills);
   const positionPoints = getPositionPoints(entry.position, positions);
+  const tikTokPoints = getTikTokPoints(entry.tiktokPoints);
   const penalty = Number(entry.penaltyPoints || 0);
-  return killsPoints + positionPoints - penalty;
+
+  return killsPoints + positionPoints + tikTokPoints - penalty;
 }
 
 export function getPositionLabel(position) {
