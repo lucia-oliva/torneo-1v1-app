@@ -22,7 +22,7 @@ export default function Header() {
 
         <div className="hero-header__divider" />
 
-        <h2 className="hero-header__subtitle">Torneo 1V1</h2>
+        <h2 className="hero-header__subtitle">1V1 CUP TOURNAMENT</h2>
       </div>
     </header>
   );
