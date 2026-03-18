@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || 'https://torneo-1v1-app.vercel.app/';
+const API_URL = import.meta.env.VITE_API_URL || 'https://torneo-1v1-app.vercel.app/api';
 
 async function request(path, options = {}) {
   const response = await fetch(`${API_URL}${path}`, {
