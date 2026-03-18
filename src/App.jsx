@@ -1,0 +1,326 @@
+import { useEffect, useMemo, useState } from 'react';
+import Header from './components/Header';
+import ControlPanel from './components/ControlPanel';
+import RankingTable from './components/RankingTable';
+import AlertToast from './components/AlertToast';
+import { DAYS, POSITIONS, SANCTION_TYPES } from './data/mockData';
+import { calculateEntryPoints, getPositionPoints } from './utils/scoring';
+import {
+  getEntries,
+  getSlots,
+  createEntry,
+  updateEntryById,
+  deleteEntryById,
+} from './services/api';
+
+function normalizeEntry(entry) {
+  const populatedSlot = entry?.slotId && typeof entry.slotId === 'object' ? entry.slotId : null;
+
+  return {
+    ...entry,
+    id: entry._id ?? entry.id,
+    slotId: populatedSlot?._id ?? entry.slotId,
+    slot: populatedSlot,
+  };
+}
+
+export default function App() {
+  const [slots, setSlots] = useState([]);
+  const [entries, setEntries] = useState([]);
+  const [selectedSlot, setSelectedSlot] = useState('');
+  const [selectedDay, setSelectedDay] = useState(DAYS[0]);
+  const [killsInput, setKillsInput] = useState(0);
+  const [positionInput, setPositionInput] = useState('none');
+  const [rankingFilter, setRankingFilter] = useState('all');
+  const [sanctionTypeInput, setSanctionTypeInput] = useState('yellow');
+  const [manualPenaltyInput, setManualPenaltyInput] = useState(2);
+  const [alert, setAlert] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!alert) return;
+    const timer = setTimeout(() => setAlert(null), 2400);
+    return () => clearTimeout(timer);
+  }, [alert]);
+
+  useEffect(() => {
+    async function loadInitialData() {
+      try {
+        setLoading(true);
+
+        const [slotsData, entriesData] = await Promise.all([getSlots(), getEntries()]);
+        const normalizedEntries = entriesData.map(normalizeEntry);
+
+        setSlots(slotsData);
+        setEntries(normalizedEntries);
+        setSelectedSlot((prev) => prev || slotsData[0]?._id || '');
+      } catch (error) {
+        setAlert({
+          type: 'penalty',
+          title: 'Error al cargar datos',
+          description: error.message || 'No se pudo conectar con el backend',
+        });
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadInitialData();
+  }, []);
+
+  const filteredEntries = useMemo(() => {
+    if (rankingFilter === 'all') return entries;
+    return entries.filter((entry) => entry.day === Number(rankingFilter));
+  }, [entries, rankingFilter]);
+
+  const ranking = useMemo(() => {
+    return slots
+      .map((slot) => {
+        const slotEntries = filteredEntries.filter((entry) => entry.slotId === slot._id);
+
+        const totalPoints = slotEntries.reduce(
+          (acc, entry) => acc + calculateEntryPoints(entry, POSITIONS),
+          0
+        );
+
+        const yellowCount = slotEntries.reduce(
+          (acc, entry) => acc + (entry.sanctionType === 'yellow' ? 1 : 0),
+          0
+        );
+
+        const redCount = slotEntries.reduce(
+          (acc, entry) => acc + (entry.sanctionType === 'red' ? 1 : 0),
+          0
+        );
+
+        const killsTotal = slotEntries.reduce(
+          (acc, entry) => acc + Number(entry.kills || 0),
+          0
+        );
+
+        return {
+          id: slot._id,
+          name: slot.name,
+          totalPoints,
+          yellowCount,
+          redCount,
+          killsTotal,
+        };
+      })
+      .sort((a, b) => {
+        if (b.totalPoints !== a.totalPoints) return b.totalPoints - a.totalPoints;
+        if (b.killsTotal !== a.killsTotal) return b.killsTotal - a.killsTotal;
+        return a.name.localeCompare(b.name);
+      })
+      .map((item, index) => ({ ...item, rank: index + 1 }));
+  }, [slots, filteredEntries]);
+
+  const currentSlotName = useMemo(() => {
+    return slots.find((slot) => slot._id === selectedSlot)?.name ?? '';
+  }, [slots, selectedSlot]);
+
+  const slotEntriesForSelectedDay = useMemo(() => {
+    return entries.filter(
+      (entry) => entry.slotId === selectedSlot && entry.day === Number(selectedDay)
+    );
+  }, [entries, selectedSlot, selectedDay]);
+
+  function addLocalEntry(savedEntry) {
+    const normalized = normalizeEntry(savedEntry);
+    setEntries((prev) => [normalized, ...prev]);
+  }
+
+  function replaceLocalEntry(savedEntry) {
+    const normalized = normalizeEntry(savedEntry);
+    setEntries((prev) =>
+      prev.map((entry) => (entry.id === normalized.id ? normalized : entry))
+    );
+  }
+
+  async function handleAddScore() {
+    if (!selectedSlot) return;
+
+    try {
+      const kills = Number(killsInput) || 0;
+      const bonus = getPositionPoints(positionInput, POSITIONS);
+
+      const saved = await createEntry({
+        slotId: selectedSlot,
+        day: Number(selectedDay),
+        kills,
+        position: positionInput,
+        sanctionType: null,
+        penaltyPoints: 0,
+      });
+
+      addLocalEntry(saved);
+
+      setAlert({
+        type: 'score',
+        title: 'Puntos guardados',
+        description: `${currentSlotName} · Día ${selectedDay} · +${kills * 2 + bonus} pts`,
+      });
+
+      setKillsInput(0);
+      setPositionInput('none');
+    } catch (error) {
+      setAlert({
+        type: 'penalty',
+        title: 'No se pudo guardar',
+        description: error.message || 'Error al guardar puntos',
+      });
+    }
+  }
+
+  async function handleAddSanction() {
+    if (!selectedSlot) return;
+
+    try {
+      const penalty = Number(manualPenaltyInput) || 0;
+
+      const saved = await createEntry({
+        slotId: selectedSlot,
+        day: Number(selectedDay),
+        kills: 0,
+        position: 'none',
+        sanctionType: sanctionTypeInput,
+        penaltyPoints: penalty,
+      });
+
+      addLocalEntry(saved);
+
+      setAlert({
+        type: 'penalty',
+        title: 'Sanción guardada',
+        description: `${currentSlotName} · Día ${selectedDay} · -${penalty} pts`,
+      });
+
+      setManualPenaltyInput(2);
+    } catch (error) {
+      setAlert({
+        type: 'penalty',
+        title: 'No se pudo guardar',
+        description: error.message || 'Error al guardar sanción',
+      });
+    }
+  }
+
+  async function updateEntry(entryId, updates) {
+    const currentEntry = entries.find((entry) => entry.id === entryId);
+
+    if (!currentEntry) {
+      setAlert({
+        type: 'penalty',
+        title: 'No se encontró el registro',
+        description: 'El registro a editar no existe en memoria',
+      });
+      return;
+    }
+
+    const entrySlotName =
+      slots.find((slot) => slot._id === currentEntry.slotId)?.name ?? currentSlotName;
+
+    try {
+      const saved = await updateEntryById(entryId, {
+        kills: Number(updates.kills ?? currentEntry.kills ?? 0),
+        position: updates.position ?? currentEntry.position ?? 'none',
+        sanctionType: updates.sanctionType || null,
+        penaltyPoints: Number(updates.penaltyPoints ?? currentEntry.penaltyPoints ?? 0),
+      });
+
+      replaceLocalEntry(saved);
+
+      setAlert({
+        type: 'score',
+        title: 'Registro actualizado',
+        description: `${entrySlotName} · Día ${currentEntry.day} · cambios guardados`,
+      });
+    } catch (error) {
+      setAlert({
+        type: 'penalty',
+        title: 'No se pudo editar',
+        description: error.message || 'Error al actualizar el registro',
+      });
+    }
+  }
+
+  async function handleDeleteEntry(entryId) {
+    const currentEntry = entries.find((entry) => entry.id === entryId);
+
+    if (!currentEntry) {
+      setAlert({
+        type: 'penalty',
+        title: 'No se encontró el registro',
+        description: 'El registro a eliminar no existe en memoria',
+      });
+      return;
+    }
+
+    const entrySlotName =
+      slots.find((slot) => slot._id === currentEntry.slotId)?.name ?? currentSlotName;
+
+    try {
+      await deleteEntryById(entryId);
+
+      setEntries((prev) => prev.filter((entry) => entry.id !== entryId));
+
+      setAlert({
+        type: 'score',
+        title: 'Registro eliminado',
+        description: `${entrySlotName} · Día ${currentEntry.day} · eliminado correctamente`,
+      });
+    } catch (error) {
+      setAlert({
+        type: 'penalty',
+        title: 'No se pudo eliminar',
+        description: error.message || 'Error al eliminar el registro',
+      });
+    }
+  }
+
+  return (
+    <div className="app-shell">
+      <AlertToast alert={alert} />
+      <div className="app-shell__glow" />
+
+      <main className="app-container">
+        <Header />
+
+        <section className="main-grid">
+          <ControlPanel
+            slots={slots}
+            days={DAYS}
+            positions={POSITIONS}
+            sanctionTypes={SANCTION_TYPES}
+            selectedSlot={selectedSlot}
+            setSelectedSlot={setSelectedSlot}
+            selectedDay={selectedDay}
+            setSelectedDay={setSelectedDay}
+            killsInput={killsInput}
+            setKillsInput={setKillsInput}
+            positionInput={positionInput}
+            setPositionInput={setPositionInput}
+            sanctionTypeInput={sanctionTypeInput}
+            setSanctionTypeInput={setSanctionTypeInput}
+            manualPenaltyInput={manualPenaltyInput}
+            setManualPenaltyInput={setManualPenaltyInput}
+            currentSlotName={currentSlotName}
+            slotEntriesForSelectedDay={slotEntriesForSelectedDay}
+            handleAddScore={handleAddScore}
+            handleAddSanction={handleAddSanction}
+            updateEntry={updateEntry}
+            deleteEntry={handleDeleteEntry}
+            loading={loading}
+          />
+
+          <RankingTable
+            ranking={ranking}
+            rankingFilter={rankingFilter}
+            setRankingFilter={setRankingFilter}
+            days={DAYS}
+          />
+        </section>
+      </main>
+    </div>
+  );
+}
