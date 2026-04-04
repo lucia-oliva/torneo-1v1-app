@@ -29,11 +29,15 @@ function normalizeEntry(entry) {
   };
 }
 
+function getDayLabel(dayValue) {
+  return DAYS.find((day) => day.value === Number(dayValue))?.label ?? `Día ${dayValue}`;
+}
+
 export default function App() {
   const [slots, setSlots] = useState([]);
   const [entries, setEntries] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState('');
-  const [selectedDay, setSelectedDay] = useState(DAYS[0]);
+  const [selectedDay, setSelectedDay] = useState(DAYS[0]?.value ?? 1);
   const [killsInput, setKillsInput] = useState(0);
   const [positionInput, setPositionInput] = useState('none');
   const [tiktokInput, setTiktokInput] = useState(0);
@@ -126,6 +130,10 @@ export default function App() {
     return slots.find((slot) => slot._id === selectedSlot)?.name ?? '';
   }, [slots, selectedSlot]);
 
+  const selectedDayLabel = useMemo(() => {
+    return getDayLabel(selectedDay);
+  }, [selectedDay]);
+
   const slotEntriesForSelectedDay = useMemo(() => {
     return entries.filter(
       (entry) => entry.slotId === selectedSlot && entry.day === Number(selectedDay)
@@ -167,7 +175,7 @@ export default function App() {
     setAlert({
       type: 'score',
       title: 'Puntos guardados',
-      description: `${currentSlotName} · Día ${selectedDay} · +${kills * 2 + bonus + tiktokPoints} pts`,
+      description: `${currentSlotName} · ${selectedDayLabel} · +${kills * 2 + bonus + tiktokPoints} pts`,
     });
 
     setKillsInput(0);
@@ -202,7 +210,7 @@ export default function App() {
       setAlert({
         type: 'penalty',
         title: 'Sanción guardada',
-        description: `${currentSlotName} · Día ${selectedDay} · -${penalty} pts`,
+        description: `${currentSlotName} · ${selectedDayLabel} · -${penalty} pts`,
       });
 
       setManualPenaltyInput(2);
@@ -244,7 +252,7 @@ export default function App() {
       setAlert({
         type: 'score',
         title: 'Registro actualizado',
-        description: `${entrySlotName} · Día ${currentEntry.day} · cambios guardados`,
+        description: `${entrySlotName} · ${getDayLabel(currentEntry.day)} · cambios guardados`,
       });
     } catch (error) {
       setAlert({
@@ -278,7 +286,7 @@ export default function App() {
       setAlert({
         type: 'score',
         title: 'Registro eliminado',
-        description: `${entrySlotName} · Día ${currentEntry.day} · eliminado correctamente`,
+        description: `${entrySlotName} · ${getDayLabel(currentEntry.day)} · eliminado correctamente`,
       });
     } catch (error) {
       setAlert({
@@ -308,6 +316,7 @@ export default function App() {
             selectedSlot={selectedSlot}
             setSelectedSlot={setSelectedSlot}
             selectedDay={selectedDay}
+            selectedDayLabel={selectedDayLabel}
             setSelectedDay={setSelectedDay}
             killsInput={killsInput}
             setKillsInput={setKillsInput}

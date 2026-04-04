@@ -16,8 +16,8 @@ export default function RankingTable({ ranking, rankingFilter, setRankingFilter,
           <SelectField value={rankingFilter} onChange={(event) => setRankingFilter(event.target.value)}>
             <option value="all">Total</option>
             {days.map((day) => (
-              <option key={day} value={day}>
-                Día {day}
+              <option key={day.value} value={day.value}>
+                {day.label}
               </option>
             ))}
           </SelectField>

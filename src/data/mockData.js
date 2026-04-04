@@ -1,4 +1,9 @@
-export const DAYS = [16, 17, 18, 19, 20];
+export const DAYS = [
+  { value: 1, label: 'Lunes' },
+  { value: 2, label: 'Martes' },
+  { value: 3, label: 'Miércoles' },
+  { value: 4, label: 'Jueves' },
+];
 
 export const POSITIONS = [
   { value: 'none', label: 'Sin posición', points: 0 },
