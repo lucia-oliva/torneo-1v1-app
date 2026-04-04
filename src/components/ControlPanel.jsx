@@ -15,6 +15,7 @@ export default function ControlPanel({
   selectedSlot,
   setSelectedSlot,
   selectedDay,
+  selectedDayLabel,
   setSelectedDay,
   killsInput,
   setKillsInput,
@@ -59,13 +60,13 @@ export default function ControlPanel({
           <div className="day-grid">
             {days.map((day) => (
               <button
-                key={day}
+                key={day.value}
                 type="button"
-                onClick={() => setSelectedDay(day)}
-                className={`day-chip ${selectedDay === day ? 'day-chip--active' : ''}`}
+                onClick={() => setSelectedDay(day.value)}
+                className={`day-chip ${selectedDay === day.value ? 'day-chip--active' : ''}`}
                 disabled={loading}
               >
-                {day}
+                {day.label}
               </button>
             ))}
           </div>
@@ -165,6 +166,7 @@ export default function ControlPanel({
       <EntryHistory
         slotName={currentSlotName}
         selectedDay={selectedDay}
+        selectedDayLabel={selectedDayLabel}
         entries={slotEntriesForSelectedDay}
         positions={positions}
         sanctionTypes={sanctionTypes}

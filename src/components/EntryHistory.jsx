@@ -8,6 +8,7 @@ import { calculateEntryPoints, getPositionLabel } from '../utils/scoring';
 export default function EntryHistory({
   slotName,
   selectedDay,
+  selectedDayLabel,
   entries,
   positions,
   sanctionTypes,
@@ -84,7 +85,7 @@ export default function EntryHistory({
     <div className="history-card">
       <div className="history-card__top">
         <span className="history-card__slot">{slotName || 'Sin slot'}</span>
-        <span className="history-card__day">Día {selectedDay}</span>
+        <span className="history-card__day">{selectedDayLabel || `Día ${selectedDay}`}</span>
       </div>
 
       {orderedEntries.length === 0 ? (
