@@ -1,8 +1,11 @@
+import { Route, Routes } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
 import Header from './components/Header';
 import ControlPanel from './components/ControlPanel';
 import RankingTable from './components/RankingTable';
 import AlertToast from './components/AlertToast';
+import NovarushPage from './pages/NovarushPage';
+import LoginPage from './pages/LoginPage';
 import { DAYS, POSITIONS, SANCTION_TYPES } from './data/mockData';
 import {
   calculateEntryPoints,
@@ -32,7 +35,7 @@ function getDayLabel(dayValue) {
   return DAYS.find((day) => day.value === Number(dayValue))?.label ?? `Día ${dayValue}`;
 }
 
-export default function App() {
+function HomePage() {
   const [slots, setSlots] = useState([]);
   const [entries, setEntries] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState('');
@@ -330,5 +333,15 @@ export default function App() {
         </section>
       </main>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/novarush" element={<NovarushPage />} />
+      <Route path="/login" element={<LoginPage />} />
+    </Routes>
   );
 }

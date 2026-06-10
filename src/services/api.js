@@ -2,6 +2,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'https://torneo-1v1-app.vercel.a
 
 async function request(path, options = {}) {
   const response = await fetch(`${API_URL}${path}`, {
+    credentials: options.credentials || 'same-origin',
     headers: {
       'Content-Type': 'application/json',
       ...(options.headers || {}),
@@ -58,4 +59,32 @@ export async function deleteEntryById(entryId) {
   });
 
   return res.data;
+}
+
+export async function loginAdmin(payload) {
+  const res = await request('/auth/login', {
+    method: 'POST',
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  });
+
+  return res.user;
+}
+
+export async function logoutAdmin() {
+  await request('/auth/logout', {
+    method: 'POST',
+    credentials: 'include',
+  });
+}
+
+export async function getCurrentUser() {
+  try {
+    const res = await request('/auth/me', {
+      credentials: 'include',
+    });
+    return res.user;
+  } catch {
+    return null;
+  }
 }

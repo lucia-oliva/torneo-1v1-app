@@ -306,6 +306,121 @@ img {
   min-width: 0;
 }
 
+.novarush-page {
+  min-height: calc(100vh - 3rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem 0;
+}
+
+.novarush-page__eyebrow {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.novarush-page__title {
+  margin: 0;
+  font-size: clamp(3rem, 10vw, 7rem);
+  line-height: 0.9;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.novarush-page__copy {
+  max-width: 42rem;
+  margin: 0;
+  color: var(--text-soft);
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  line-height: 1.5;
+}
+
+.novarush-page__link {
+  width: fit-content;
+  border: 1px solid rgba(255, 50, 50, 0.35);
+  border-radius: 0.95rem;
+  padding: 0.85rem 1rem;
+  color: var(--text);
+  background: rgba(255, 50, 50, 0.12);
+  box-shadow: var(--shadow-accent);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.login-shell {
+  display: grid;
+  place-items: center;
+  padding: 1rem 0 3rem;
+}
+
+.login-card {
+  width: min(100%, 430px);
+  display: grid;
+  gap: 1rem;
+  border: 1px solid var(--border-soft);
+  border-radius: 1.35rem;
+  padding: 1.15rem;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.015));
+  box-shadow: 0 0 34px rgba(255, 50, 50, 0.08);
+}
+
+.login-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border: 1px solid rgba(255, 50, 50, 0.32);
+  border-radius: 1rem;
+  color: var(--accent);
+  background: rgba(255, 50, 50, 0.12);
+}
+
+.login-card__eyebrow {
+  margin: 0 0 0.2rem;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.login-card__title {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.login-field {
+  display: grid;
+}
+
+.login-card__error {
+  margin: 0;
+  border: 1px solid rgba(255, 50, 50, 0.28);
+  border-radius: 0.95rem;
+  padding: 0.85rem;
+  color: #fecaca;
+  background: rgba(127, 29, 29, 0.28);
+}
+
+.login-card__link {
+  justify-self: center;
+  color: var(--text-soft);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
 .panel-card {
   border-radius: var(--radius-xl);
   padding: 1rem;
