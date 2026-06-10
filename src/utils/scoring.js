@@ -7,17 +7,12 @@ export function getKillsPoints(kills) {
   return Number(kills || 0) * 2;
 }
 
-export function getTikTokPoints(tiktokPoints) {
-  return Number(tiktokPoints || 0);
-}
-
 export function calculateEntryPoints(entry, positions) {
   const killsPoints = getKillsPoints(entry.kills);
   const positionPoints = getPositionPoints(entry.position, positions);
-  const tikTokPoints = getTikTokPoints(entry.tiktokPoints);
   const penalty = Number(entry.penaltyPoints || 0);
 
-  return killsPoints + positionPoints + tikTokPoints - penalty;
+  return killsPoints + positionPoints - penalty;
 }
 
 export function getPositionLabel(position) {

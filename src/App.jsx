@@ -8,7 +8,6 @@ import {
   calculateEntryPoints,
   getPositionPoints,
   getKillsPoints,
-  getTikTokPoints,
 } from './utils/scoring';
 import {
   getEntries,
@@ -40,7 +39,6 @@ export default function App() {
   const [selectedDay, setSelectedDay] = useState(DAYS[0]?.value ?? 1);
   const [killsInput, setKillsInput] = useState(0);
   const [positionInput, setPositionInput] = useState('none');
-  const [tiktokInput, setTiktokInput] = useState(0);
   const [rankingFilter, setRankingFilter] = useState('all');
   const [sanctionTypeInput, setSanctionTypeInput] = useState('yellow');
   const [manualPenaltyInput, setManualPenaltyInput] = useState(2);
@@ -84,47 +82,41 @@ export default function App() {
   }, [entries, rankingFilter]);
 
   const ranking = useMemo(() => {
-  return slots
-    .map((slot) => {
-      const slotEntries = filteredEntries.filter((entry) => entry.slotId === slot._id);
+    return slots
+      .map((slot) => {
+        const slotEntries = filteredEntries.filter((entry) => entry.slotId === slot._id);
 
-      const killsPointsTotal = slotEntries.reduce(
-        (acc, entry) => acc + getKillsPoints(entry.kills),
-        0
-      );
+        const killsPointsTotal = slotEntries.reduce(
+          (acc, entry) => acc + getKillsPoints(entry.kills),
+          0
+        );
 
-      const positionPointsTotal = slotEntries.reduce(
-        (acc, entry) => acc + getPositionPoints(entry.position, POSITIONS),
-        0
-      );
+        const positionPointsTotal = slotEntries.reduce(
+          (acc, entry) => acc + getPositionPoints(entry.position, POSITIONS),
+          0
+        );
 
-      const tikTokPointsTotal = slotEntries.reduce(
-        (acc, entry) => acc + getTikTokPoints(entry.tiktokPoints),
-        0
-      );
+        const totalPoints = slotEntries.reduce(
+          (acc, entry) => acc + calculateEntryPoints(entry, POSITIONS),
+          0
+        );
 
-      const totalPoints = slotEntries.reduce(
-        (acc, entry) => acc + calculateEntryPoints(entry, POSITIONS),
-        0
-      );
-
-      return {
-        id: slot._id,
-        name: slot.name,
-        killsPointsTotal,
-        positionPointsTotal,
-        tikTokPointsTotal,
-        totalPoints,
-      };
-    })
-    .sort((a, b) => {
-      if (b.totalPoints !== a.totalPoints) return b.totalPoints - a.totalPoints;
-      if (b.killsPointsTotal !== a.killsPointsTotal) return b.killsPointsTotal - a.killsPointsTotal;
-      if (b.positionPointsTotal !== a.positionPointsTotal) return b.positionPointsTotal - a.positionPointsTotal;
-      return a.name.localeCompare(b.name);
-    })
-    .map((item, index) => ({ ...item, rank: index + 1 }));
-}, [slots, filteredEntries]);
+        return {
+          id: slot._id,
+          name: slot.name,
+          killsPointsTotal,
+          positionPointsTotal,
+          totalPoints,
+        };
+      })
+      .sort((a, b) => {
+        if (b.totalPoints !== a.totalPoints) return b.totalPoints - a.totalPoints;
+        if (b.killsPointsTotal !== a.killsPointsTotal) return b.killsPointsTotal - a.killsPointsTotal;
+        if (b.positionPointsTotal !== a.positionPointsTotal) return b.positionPointsTotal - a.positionPointsTotal;
+        return a.name.localeCompare(b.name);
+      })
+      .map((item, index) => ({ ...item, rank: index + 1 }));
+  }, [slots, filteredEntries]);
 
   const currentSlotName = useMemo(() => {
     return slots.find((slot) => slot._id === selectedSlot)?.name ?? '';
@@ -153,42 +145,39 @@ export default function App() {
   }
 
   async function handleAddScore() {
-  if (!selectedSlot) return;
+    if (!selectedSlot) return;
 
-  try {
-    const kills = Number(killsInput) || 0;
-    const tiktokPoints = Number(tiktokInput) || 0;
-    const bonus = getPositionPoints(positionInput, POSITIONS);
+    try {
+      const kills = Number(killsInput) || 0;
+      const bonus = getPositionPoints(positionInput, POSITIONS);
 
-    const saved = await createEntry({
-      slotId: selectedSlot,
-      day: Number(selectedDay),
-      kills,
-      position: positionInput,
-      tiktokPoints,
-      sanctionType: null,
-      penaltyPoints: 0,
-    });
+      const saved = await createEntry({
+        slotId: selectedSlot,
+        day: Number(selectedDay),
+        kills,
+        position: positionInput,
+        sanctionType: null,
+        penaltyPoints: 0,
+      });
 
-    addLocalEntry(saved);
+      addLocalEntry(saved);
 
-    setAlert({
-      type: 'score',
-      title: 'Puntos guardados',
-      description: `${currentSlotName} · ${selectedDayLabel} · +${kills * 2 + bonus + tiktokPoints} pts`,
-    });
+      setAlert({
+        type: 'score',
+        title: 'Puntos guardados',
+        description: `${currentSlotName} · ${selectedDayLabel} · +${kills * 2 + bonus} pts`,
+      });
 
-    setKillsInput(0);
-    setPositionInput('none');
-    setTiktokInput(0);
-  } catch (error) {
-    setAlert({
-      type: 'penalty',
-      title: 'No se pudo guardar',
-      description: error.message || 'Error al guardar puntos',
-    });
+      setKillsInput(0);
+      setPositionInput('none');
+    } catch (error) {
+      setAlert({
+        type: 'penalty',
+        title: 'No se pudo guardar',
+        description: error.message || 'Error al guardar puntos',
+      });
+    }
   }
-}
 
   async function handleAddSanction() {
     if (!selectedSlot) return;
@@ -239,13 +228,12 @@ export default function App() {
       slots.find((slot) => slot._id === currentEntry.slotId)?.name ?? currentSlotName;
 
     try {
-     const saved = await updateEntryById(entryId, {
-  kills: Number(updates.kills ?? currentEntry.kills ?? 0),
-  position: updates.position ?? currentEntry.position ?? 'none',
-  tiktokPoints: Number(updates.tiktokPoints ?? currentEntry.tiktokPoints ?? 0),
-  sanctionType: updates.sanctionType || null,
-  penaltyPoints: Number(updates.penaltyPoints ?? currentEntry.penaltyPoints ?? 0),
-});
+      const saved = await updateEntryById(entryId, {
+        kills: Number(updates.kills ?? currentEntry.kills ?? 0),
+        position: updates.position ?? currentEntry.position ?? 'none',
+        sanctionType: updates.sanctionType || null,
+        penaltyPoints: Number(updates.penaltyPoints ?? currentEntry.penaltyPoints ?? 0),
+      });
 
       replaceLocalEntry(saved);
 
@@ -310,8 +298,6 @@ export default function App() {
             slots={slots}
             days={DAYS}
             positions={POSITIONS}
-            tiktokInput={tiktokInput}
-            setTiktokInput={setTiktokInput}
             sanctionTypes={SANCTION_TYPES}
             selectedSlot={selectedSlot}
             setSelectedSlot={setSelectedSlot}

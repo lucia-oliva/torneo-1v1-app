@@ -33,10 +33,10 @@ export default function RankingTable({ ranking, rankingFilter, setRankingFilter,
                 <th>Slot</th>
                 <th>Kill</th>
                 <th>Posic.</th>
-                <th>TikTok</th>
                 <th>Total</th>
               </tr>
             </thead>
+
             <tbody>
               {ranking.map((team, index) => {
                 const isTopThree = index < 3;
@@ -46,12 +46,15 @@ export default function RankingTable({ ranking, rankingFilter, setRankingFilter,
                     <td data-label="Puesto">
                       <span className={`rank-chip ${isTopThree ? 'rank-chip--top' : ''}`}>{team.rank}</span>
                     </td>
+
                     <td data-label="Slot" className="ranking-table__slot">
                       {team.name}
                     </td>
+
                     <td data-label="Kill">{team.killsPointsTotal}</td>
+
                     <td data-label="Posic.">{team.positionPointsTotal}</td>
-                    <td data-label="TikTok">{team.tikTokPointsTotal}</td>
+
                     <td data-label="Total" className="ranking-table__strong">
                       {team.totalPoints}
                     </td>

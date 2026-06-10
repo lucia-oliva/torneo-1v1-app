@@ -21,7 +21,6 @@ export default function EntryHistory({
     position: 'none',
     sanctionType: '',
     penaltyPoints: 0,
-    tiktokPoints:0,
   });
 
   const orderedEntries = useMemo(() => {
@@ -41,7 +40,6 @@ export default function EntryHistory({
     setDraft({
       kills: Number(entry.kills || 0),
       position: entry.position || 'none',
-       tiktokPoints: Number(entry.tiktokPoints || 0),
       sanctionType: entry.sanctionType || '',
       penaltyPoints: Number(entry.penaltyPoints || 0),
     });
@@ -53,7 +51,6 @@ export default function EntryHistory({
       kills: 0,
       position: 'none',
       sanctionType: '',
-      tiktokPoints: 0,
       penaltyPoints: 0,
     });
   }
@@ -62,7 +59,6 @@ export default function EntryHistory({
     onEditEntry(entryId, {
       kills: Number(draft.kills || 0),
       position: draft.position || 'none',
-      tiktokPoints: Number(draft.tiktokPoints || 0),
       sanctionType: draft.sanctionType || null,
       penaltyPoints: Number(draft.penaltyPoints || 0),
     });
@@ -102,7 +98,6 @@ export default function EntryHistory({
                   ...entry,
                   kills: Number(draft.kills || 0),
                   position: draft.position,
-                  tiktokPoints: Number(draft.tiktokPoints || 0),
                   sanctionType: draft.sanctionType || null,
                   penaltyPoints: Number(draft.penaltyPoints || 0),
                 }
@@ -151,22 +146,6 @@ export default function EntryHistory({
                           ))}
                         </SelectField>
                       </div>
-
-
-                      <div>
-  <FieldLabel>TIKTOK</FieldLabel>
-  <NumberField
-    type="number"
-    min="0"
-    value={draft.tiktokPoints}
-    onChange={(event) =>
-      setDraft((prev) => ({
-        ...prev,
-        tiktokPoints: event.target.value,
-      }))
-    }
-  />
-</div>
 
                       <div>
                         <FieldLabel>Sanción</FieldLabel>
@@ -247,10 +226,6 @@ export default function EntryHistory({
                       <span className="top-badge">
                         Pos {getPositionLabel(entry.position)}
                       </span>
-
-                       {Number(entry.tiktokPoints || 0) > 0 ? (
-    <span className="top-badge">TIKTOK {entry.tiktokPoints} pts</span>
-  ) : null}
 
                       {entry.sanctionType ? (
                         <span className="top-badge top-badge--danger">

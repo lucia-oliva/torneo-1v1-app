@@ -55,6 +55,3 @@ Cambios rápidos para personalizar:
 - Posición 3: 4 puntos
 - Sanción: descuento manual
 
-## Próximo paso recomendable
-
-Persistir datos en backend o localStorage para no perder las cargas al recargar la página.
